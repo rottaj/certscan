@@ -1,4 +1,4 @@
-module github.com/rottaj/crtscan
+module github.com/rottaj/certscan
 
 go 1.19
 

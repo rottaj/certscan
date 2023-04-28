@@ -1,6 +1,8 @@
 package main
 
-import ( "fmt"
+import ( 
+    _"os"
+    "fmt"
 	"net"
     "net/http"
 	"time"
@@ -9,12 +11,17 @@ import ( "fmt"
 	"encoding/json"
 	"io/ioutil"
 	"github.com/fatih/color"
-
-
 )
 
 
+// ascii art
+
+
 func main() {
+
+
+
+
 
 	type CertObject struct {
 		IssuerCaId int `json:"issuer_ca_id"`
@@ -28,10 +35,16 @@ func main() {
 		SerialNumber string `json:"serial_number`
 	}
 
+
+    
+    // Get Command-line arguments
+
 	c := http.Client{
 		Timeout: 60 * time.Second,
 	}
 
+
+    fmt.Println("\n Fetching SSL/TLS certificates's...")
     resp, err := c.Get("http://crt.sh/?q=google.com&output=json")
     if err != nil {
         panic(err) 
@@ -53,8 +66,6 @@ func main() {
 	}
 	
 	certData := readJson(body)
-	fmt.Println(len(certData))
-
 
 	// Checkers (isWildCard, isAlive, isCached)
 	var isWildCard = func(url string) (isValid bool) {
@@ -74,8 +85,7 @@ func main() {
 		}
 	}
 
-	
-	
+
 	var cache = make(map[string]string)
 
 	for i := range(certData) {
@@ -87,11 +97,6 @@ func main() {
 
 		if isValid {
 			cache[certData[i].CommonName] = certData[i].CommonName
-			//fmt.Printf("%s%s\n", isValid, certData[i].CommonName)
-		
-
-			
-
 		}
 	}
 
@@ -102,11 +107,49 @@ func main() {
 		timeout := 1 * time.Second
 		_, err := net.DialTimeout("tcp", cache[i]+":80", timeout)
 		if err != nil {
-			color.Red("[-]" + cache[i])
+			color.Red("[-] " + cache[i])
+            delete(cache, cache[i])
+
 		} else {
-			color.Green("[+]" + cache[i])
+			color.Green("[+] " + cache[i])
 		}
 	}
 
+       
+    
+    // get tty size. Next enumeration.
+
+    //fmt.Println("-----------")
+    fmt.Println("\n\n========================================================================================\n\n")   
+    //fmt.Println("-----------")
+
+
+    // Get Response Headers
+
+    /* 
+        Important ones by default.
+        Will build a flag to include all response headers.
+    */
+      
+
+    for i := range(cache) {
+        time.Sleep(1 * time.Second)
+        color.Yellow("\n[+] %s", cache[i] + "\n")
+        resp, err := c.Get("http://" + cache[i])
+        if err != nil {
+            color.Red("%s", err)
+        } else {
+            // iterate through response Headers
+            for key, val := range resp.Header {
+                if key == "Server" || key == "P3p" {
+                    color.Green("%s:%s", key, val)
+                } else {
+                    color.Green("%s", key)
+                }
+            }
+        }
+
+        
+    }
 
 }
