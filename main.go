@@ -2,6 +2,7 @@ package main
 
 import ( 
     _"os"
+    "flag"
     "fmt"
 	"net"
     "net/http"
@@ -16,12 +17,15 @@ import (
 
 // ascii art
 
+var urlFlag = flag.String("url", "", "The URL of the website.")
+
+func init() {
+    flag.StringVar(urlFlag, "u", "", "Shorthand for --url")
+}
+
 
 func main() {
-
-
-
-
+    flag.Parse()    
 
 	type CertObject struct {
 		IssuerCaId int `json:"issuer_ca_id"`
@@ -45,7 +49,7 @@ func main() {
 
 
     fmt.Println("\n Fetching SSL/TLS certificates's...")
-    resp, err := c.Get("http://crt.sh/?q=google.com&output=json")
+    resp, err := c.Get("http://crt.sh/?q="+*urlFlag+"&output=json")
     if err != nil {
         panic(err) 
 	}
