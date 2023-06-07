@@ -3,6 +3,7 @@ package main
 import ( 
     _"os"
     "flag"
+    "strconv"
     "fmt"
 	"net"
     "net/http"
@@ -18,14 +19,20 @@ import (
 // ascii art
 
 var urlFlag = flag.String("url", "", "The URL of the website.")
+var timeOutFlag = flag.String("timeout", "60", "HTTP response timeout. Default 60 seconds.")
 
 func init() {
-    flag.StringVar(urlFlag, "u", "", "Shorthand for --url")
+    flag.StringVar(urlFlag, "u", "", "Shorthand for -url")
+    flag.StringVar(timeOutFlag, "t", "60", "Shourthand for -timeout")
 }
 
 
 func main() {
-    flag.Parse()    
+    flag.Parse()
+    timeout, err := strconv.Atoi(*timeOutFlag)
+    if err != nil {
+        panic(err)
+    }
 
 	type CertObject struct {
 		IssuerCaId int `json:"issuer_ca_id"`
@@ -44,7 +51,7 @@ func main() {
     // Get Command-line arguments
 
 	c := http.Client{
-		Timeout: 60 * time.Second,
+		Timeout: time.Duration(timeout) * time.Second,
 	}
 
 
